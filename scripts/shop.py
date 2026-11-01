@@ -1,7 +1,7 @@
 """Catalog + storefront presentation for the Namaste tarot sites: full-catalog fetch (public products.json, read only),
 per-site selection, clean display titles, galleries, variants, compare-at prices, sold-out handling, shelf pages with
 static pagination plus client-side sort/filter (assets/shop.js), product pages with related items and JSON-LD."""
-import json, os, re, time, math, html, urllib.request, datetime
+import json, os, re, time, math, html, urllib.request, urllib.parse, datetime
 import engine as G
 import present as PR
 E = G.E
@@ -259,7 +259,7 @@ def sticky(x, cat):
             f'<button type="button" class="qa" {atc_attrs(x, cat)}>Add</button></div>')
 def product_page(x, cat, shelf_name, shelf_path, pool, crumbs_root, intro_html, desc_mode='strict', desc_limit=1400, desc_head='From the publisher', meta=None, extra=''):
     _cat(x, cat)
-    url = f'{G.SITE}/products/{x["h"]}/'
+    url = f'{G.SITE}/products/{urllib.parse.quote(x["h"])}/'
     desc = PR.clean_body(EMOJI.sub('', x['body'] or ''), desc_mode, desc_limit, x['raw']) if desc_limit else ''
     x['_desc'] = desc
     facts = [('By', x['author']), ('Publisher', x['pub']), ('Cards', str(x['cards']) if x['cards'] else ''), ('ISBN' if x['gtin'].startswith('97') else 'Barcode', x['gtin']), ('SKU', '' if x['gtin'] else x['sku'])]
