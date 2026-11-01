@@ -169,7 +169,7 @@ def pages():
           'How a professional tarot reading runs, what a student can learn from watching one, and how to book a session with Namaste Tarot Center readers in Manhattan.', watch,
           ld=[G.faq_ld(faq)], crumbs=[('Home', '/'), ('Sit for a reading', '/watch-a-reading/')])
     n_d, n_b = sum(x['avail'] for x in decks), sum(x['avail'] for x in books)
-    S.search_page('/study-decks/', crumbs=[('Home', '/'), ('Search', '/search/')])
+    S.search_page('/study-decks/', crumbs=[('Home', '/'), ('Search', '/search/')], intro='Look for a study deck or a learning book by title or author.')
     S.shelf('/study-decks/', 'study-decks', 'study-decks', f'Tarot Decks to Learn On ({n_d} in Stock) | Namaste Tarot Center',
             f'Beginner-friendly tarot decks and deck-and-book kits for students: Rider-Waite-Smith editions, pocket decks and kits. {n_d} in stock, prices checked daily.',
             'Study decks', '<p class="lede">You can learn on any deck, but a few make it easier: scenes on every card, a pattern most books follow, or a full book in the box. '
