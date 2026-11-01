@@ -1,26 +1,29 @@
 """Namaste Tarot Center: a study center for people learning tarot. Card meanings, deck structure, spreads, how a professional reading runs,
-study decks, and Namaste Bookshop's free online course."""
+study decks with an on-site cart, reader profiles, and a free seven-week study plan."""
 import json, os
 import engine as G
 from cards import MAJORS, SUITS
+R = json.load(open(os.path.join(os.path.dirname(__file__), 'readers.json')))
 E = G.E
-BUSINESS_TYPE = 'BookStore'
+BUSINESS_TYPE = 'LocalBusiness'
 THEME_COLOR = '#0f4c48'
 FONTS = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;600&display=swap'
-ORG_DESC = 'Namaste Tarot Center is a free tarot study site from Namaste Bookshop in New York: card-by-card notes, how the deck is built, practice spreads and how a real reading runs.'
-LLMS_NOTE = ('Namaste Tarot Center is a Wealth Edge Ventures Inc. brand connected to Namaste Bookshop, 2 West 14th Street, New York. '
-             'All card notes are original study notes. It does not run in-person classes; it points students to Namaste Bookshop\'s free online starter course and to readings at the shop.')
-NAV = [('/how-tarot-works/', 'The deck'), ('/card-meanings/', 'Card meanings'), ('/spreads/', 'Spreads'), ('/watch-a-reading/', 'Sit for a reading'), ('/study-decks/', 'Study decks'), ('/free-course/', 'Free course')]
+ORG_DESC = 'Namaste Tarot Center is a tarot learning center in New York: card-by-card notes, how the deck is built, practice spreads, study decks and readings with working readers.'
+LLMS_NOTE = ('Namaste Tarot Center is a tarot learning brand operated by Wealth Edge Ventures Inc.; in-person readings happen inside Namaste Bookshop, 2 West 14th Street, New York. '
+             'All card notes and the seven-week study plan are original. It does not run in-person classes. Study decks have on-site pages and a cart; checkout is handled by Namaste Bookshop\'s Shopify store.')
+NAV = [('/how-tarot-works/', 'The deck'), ('/card-meanings/', 'Card meanings'), ('/spreads/', 'Spreads'), ('/watch-a-reading/', 'Sit for a reading'), ('/study-decks/', 'Study decks'), ('/free-course/', 'Study plan')]
+CART = True
+SHOP_PATH = '/study-decks/'
+PAIR_TITLE = 'Other study decks'
 ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI']
 
 def shell(pg):
     nav = ''.join(f'<li><a href="{h}"' + (' aria-current="page"' if pg['path'].startswith(h) else '') + f'>{t}</a></li>' for h, t in NAV)
-    return (f'<body><a class="skip" href="#main">Skip to content</a><div class="top"><a class="mark" href="/"><span class="dot">NT</span><span>Namaste <b>Tarot Center</b><i>a study site from Namaste Bookshop</i></span></a>'
+    return (f'<body><a class="skip" href="#main">Skip to content</a><div class="top"><a class="mark" href="/"><span class="dot">NT</span><span>Namaste <b>Tarot Center</b><i>learn to read tarot</i></span></a>{G.cart_button()}'
             f'<details class="mnav"><summary>Study map</summary><ul>{nav}</ul></details></div>'
-            f'<div class="wrap"><aside class="side"><p class="sl">Study map</p><ol>{nav}</ol><p class="sl">Practice in person</p><p class="tiny">Namaste Bookshop<br>{G.ADDR}<br><a href="tel:{G.TEL}">{G.PHONE}</a></p></aside>'
+            f'<div class="wrap"><aside class="side"><p class="sl">Study map</p><ol>{nav}</ol><p class="sl">Practice in person</p><p class="tiny"><a href="/readers/">Readers who suit students</a><br>{G.ADDR}<br><a href="tel:{G.TEL}">{G.PHONE}</a></p></aside>'
             f'<main id="main">{pg["body"]}</main></div>'
-            f'<footer class="ft"><p><b>Namaste Tarot Center</b> is a free study site run by Wealth Edge Ventures Inc. and connected to Namaste Bookshop, {G.ADDR}. '
-            f'Readings and decks are booked and sold through <a href="{G.SHOP}/">namastebookshop.com</a>.</p>'
+            f'<footer class="ft"><p><b>Namaste Tarot Center</b> &middot; free tarot study notes, study decks and readings. Readings inside Namaste Bookshop, {G.ADDR}. Operated by Wealth Edge Ventures Inc.</p>'
             f'<p><a href="mailto:{G.EMAIL}">{G.EMAIL}</a> &middot; <a href="/about/">About</a> &middot; <a href="/privacy/">Privacy</a></p></footer></body></html>')
 
 def major_page(i, m):
@@ -51,8 +54,18 @@ def suit_page(s):
           f'All fourteen {name} cards in one table, with the element of {elem}, a short note for each card and practice drills for the suit.', body,
           crumbs=[('Home', '/'), ('Card meanings', '/card-meanings/'), (f'Suit of {name}', f'/card-meanings/suit-of-{slug}/')])
 
+WHY = {}
+def product_desc(x, shelf): return f"{x['t']} as a study deck: why students pick it, and an on-site cart. {G.money(x['p'])} at Namaste Tarot Center."
+def product_body(x, cat, shelf, path):
+    facts = ''.join(f'<li><b>{a}:</b> {E(b)}</li>' for a, b in [('Publisher', x.get('vendor') or ''), ('SKU', x.get('sku') or ''), ('ISBN/UPC', x.get('gtin') or '')] if b)
+    return (f'<article class="lesson"><p class="kicker">Study deck</p><h1>{E(x["t"])}</h1><div class="pd"><img src="{E(G.img(x["img"], 700))}" alt="{E(x["t"])}" width="320" height="320">'
+            f'<div><p class="pr">{G.money(x["p"])}</p>{G.atc(x, cat, "Add to cart", "btn", True)}<h2>Why students use it</h2><p>{WHY.get(x["h"], "")}</p>'
+            f'<h2>How to start with it</h2><p>Pull the 22 majors out first and work through them with the <a href="/card-meanings/">card notes</a>, then follow the <a href="/free-course/">study plan</a>.</p>'
+            f'<ul>{facts}</ul></div></div><p class="tiny">Ships from New York; shipping and tax appear at checkout. <a href="{path}">Compare all study decks</a></p></article>')
+
 def pages():
     decks = G.cached('study_decks', lambda: G.by_handles(['rider-waite-classic', 'apprentice-tarot', 'starter-tarot', 'universal-waite', 'radiant-rider-waite', 'pocket-rider-waite', 'happy-tarot-serena-ficca']))
+    global WHY
     why = {'rider-waite-classic': 'The image set most beginner books describe, so your notes and your cards line up.',
            'apprentice-tarot': 'Keywords printed on each card, handy while meanings are still new.',
            'starter-tarot': 'Prints prompts for both directions, which helps when you start reading reversals.',
@@ -60,19 +73,20 @@ def pages():
            'radiant-rider-waite': 'Classic scenes with brighter, higher-contrast color.',
            'pocket-rider-waite': 'Smaller cards that are easier to shuffle and carry to practice.',
            'happy-tarot-serena-ficca': 'A cheerful art style for people who find traditional decks gloomy.'}
-    home = (f'<section class="intro"><p class="kicker">Free &middot; self-paced &middot; from Namaste Bookshop</p><h1>Learn tarot one layer at a time</h1>'
+    WHY = why
+    home = (f'<section class="intro"><p class="kicker">Free &middot; self-paced &middot; New York</p><h1>Learn tarot one layer at a time</h1>'
             f'<p class="lede">Namaste Tarot Center is a study site for people who want to read tarot themselves. Start with how the deck is built, work through card notes and practice spreads, '
-            f'then sit for a reading at Namaste Bookshop and watch how a working reader puts it all together.</p></section>'
+            f'then sit for a reading with one of our readers and watch how a working reader puts it all together.</p></section>'
             f'<ol class="path">'
             f'<li><span>1</span><div><h2><a href="/how-tarot-works/">Understand the deck</a></h2><p>78 cards, two arcana, four suits, sixteen court cards. Learn the skeleton first.</p></div></li>'
             f'<li><span>2</span><div><h2><a href="/card-meanings/">Study the cards</a></h2><p>Notes for all 22 Major Arcana and a table for each suit, each with something to practice.</p></div></li>'
             f'<li><span>3</span><div><h2><a href="/spreads/">Practice spreads</a></h2><p>Four layouts, from a single morning card to a five-card cross for a decision.</p></div></li>'
             f'<li><span>4</span><div><h2><a href="/watch-a-reading/">Sit for a real reading</a></h2><p>What happens at the table, and what a student can notice from the other chair.</p></div></li>'
-            f'<li><span>5</span><div><h2><a href="/free-course/">Take the free course</a></h2><p>Namaste Bookshop\'s seven-lesson Online Tarot School walks you to your first full reading.</p></div></li></ol>'
+            f'<li><span>5</span><div><h2><a href="/free-course/">Follow the study plan</a></h2><p>Seven weeks, one focus a week, ending with a full three-card reading in your own words.</p></div></li></ol>'
             f'<section class="box"><h2>Is psychic ability required?</h2><p>Not at all. Reading tarot is mostly looking closely, knowing the structure and practicing a lot. Intuition grows with use.</p>'
             f'<h2>Which deck should I learn on?</h2><p>Any deck you will actually pick up. If you want a guide, the <a href="/study-decks/">study decks page</a> compares seven common starter decks.</p></section>')
     G.add('/', 'Namaste Tarot Center | Learn Tarot: Card Meanings, Spreads & Practice',
-          'A free tarot study site from Namaste Bookshop in NYC. Learn how the 78-card deck is built, study each card, practice spreads, and see how a real reading works.', home,
+          'Namaste Tarot Center, a free tarot study site in NYC. Learn how the 78-card deck is built, study each card, practice spreads, and see how a real reading works.', home,
           ld=[G.shop_ld('BookStore')])
     deck = (f'<article class="lesson"><h1>How a tarot deck is built</h1><p class="lede">Before memorizing anything, learn the layout. Once you know where a card sits in the system, you can make a decent guess at it even with no notes.</p>'
             f'<h2>Two halves</h2><p>A standard deck has 78 cards. The <b>Major Arcana</b> are 22 numbered cards, from The Fool (0) to The World (21), and stand for big themes and turning points. '
@@ -112,33 +126,59 @@ def pages():
     faq = [('Can I tell the reader I am learning?', 'Yes. Saying so at the start lets the reader explain a little more about why a card means what it does, if they are comfortable doing that.'),
            ('Which reader is best for a student?', 'Choose a style you want to learn. For Thoth study, sit with Casey Deamoira; for Lenormand next to tarot, Mallika; for the Voyager deck, Anthony Fusco.'),
            ('How long should I book?', 'Thirty minutes gives enough time for a full spread plus a couple of follow-up questions. Fifteen minutes is fine for watching one short spread.')]
-    watch = (f'<article class="lesson"><h1>Sit for a reading as a student</h1><p class="lede">One of the fastest ways to learn is to watch someone experienced read for you. Namaste Bookshop on 14th Street has readers working most days.</p>'
+    watch = (f'<article class="lesson"><h1>Sit for a reading as a student</h1><p class="lede">One of the fastest ways to learn is to watch someone experienced read for you. Our readers on 14th Street work most days of the week.</p>'
              f'<h2>What usually happens</h2><ol><li>The reader asks what you would like to look at, or invites you to keep it to yourself.</li><li>You or the reader shuffle, and cards are laid in a spread.</li>'
              f'<li>The reader talks through the cards, connects them and leaves room for your questions.</li></ol>'
              f'<h2>What to notice from your chair</h2><ul><li>Which card the reader looks at first.</li><li>How they link neighboring cards into one sentence.</li><li>When they use the picture versus a traditional meaning.</li><li>How they word hard cards kindly.</li></ul>'
              f'<p>Write your notes after the session rather than during it, so you stay present.</p><h2>Questions from students</h2><dl class="faq">' + ''.join(f'<dt>{q}</dt><dd>{a}</dd>' for q, a in faq) + '</dl>'
-             f'<p><a class="btn" href="{G.BOOK}">Book a reading at Namaste Bookshop</a></p><p class="tiny">Readings take place at {G.ADDR}. Sessions run 15 to 60 minutes, and each reader lists their price on the booking page.</p></article>')
+             f'<p><a class="btn" href="/readers/">Choose a reader</a></p><p class="tiny">Readings take place inside Namaste Bookshop, {G.ADDR}, or upstairs at {G.HC_STREET}. Sessions run 15 to 60 minutes; prices are on each profile.</p></article>')
     G.add('/watch-a-reading/', 'Learn Tarot by Sitting for a Reading | Namaste Tarot Center',
-          'How a professional tarot reading runs, what a student can learn from watching one, and how to book a session at Namaste Bookshop in Manhattan.', watch,
+          'How a professional tarot reading runs, what a student can learn from watching one, and how to book a session with Namaste Tarot Center readers in Manhattan.', watch,
           ld=[G.faq_ld(faq)], crumbs=[('Home', '/'), ('Sit for a reading', '/watch-a-reading/')])
-    dk = ('<article class="lesson"><h1>Study decks</h1><p class="lede">You can learn on any deck. These seven are the starter decks Namaste Bookshop recommends in its own beginner guide; prices and stock update daily.</p><ul class="dk">'
+    dk = ('<article class="lesson"><h1>Study decks</h1><p class="lede">You can learn on any deck. These seven are common starter decks; prices and stock update daily.</p><ul class="dk">'
           + ''.join(f'<li><img src="{E(G.img(x["img"], 300))}" alt="{E(x["t"])}" width="120" height="120" loading="lazy"><div><h2>{E(x["t"])}</h2><p>{why.get(x["h"], "")}</p>'
-                    f'<p class="pr">{G.money(x["p"])}</p><a class="btn" {G.buy_attrs(x, "study-decks")}>Buy this deck</a></div></li>' for x in decks)
-          + '</ul><p class="tiny">Buy opens checkout on namastebookshop.com, which ships the deck. If a deck is missing above, it is out of stock today.</p></article>')
+                    f'<p class="pr">{G.money(x["p"])}</p>{G.atc(x, "study-decks", "Add to cart", "btn")} <a class="ghost" {G.buy_attrs(x, "study-decks")}>Deck notes</a></div></li>' for x in decks)
+          + '</ul><p class="tiny">Decks ship from New York; shipping and tax appear at checkout. If a deck is missing above, it is out of stock today.</p></article>')
     G.add('/study-decks/', 'Best Tarot Decks to Learn On: 7 Starter Picks | Namaste Tarot Center',
-          'Seven beginner-friendly tarot decks compared for students, from the classic Rider-Waite to a pocket edition, with live prices from Namaste Bookshop.', dk,
+          'Seven beginner-friendly tarot decks compared for students, from the classic Rider-Waite to a pocket edition, with daily prices and an on-site cart.', dk,
           ld=[G.product_ld(decks, 'Study decks for tarot students')], crumbs=[('Home', '/'), ('Study decks', '/study-decks/')])
-    fc = (f'<article class="lesson"><h1>The free Online Tarot School</h1><p class="lede">Namaste Bookshop runs a free beginner course on its own site. It is the natural next step after the notes here.</p>'
-          f'<ul><li>Seven lessons, about 90 to 120 minutes in total</li><li>A matching workbook page for each lesson</li><li>A final check where you give a full three-card reading in your own words</li><li>Email reminders are optional; nothing is locked behind sign-up</li></ul>'
-          f'<p><a class="btn" href="{G.SHOP}/pages/online-tarot-school">Open the Online Tarot School</a> <a class="ghost" href="{G.SHOP}/pages/free-tarot-starter-course">Go to lesson 1</a></p>'
-          f'<h2>Is there an in-person class?</h2><p>This site does not list in-person classes. For hands-on help, the closest thing is a reading with one of the shop\'s readers. For news about anything new, call {G.PHONE} or email {G.EMAIL}.</p></article>')
-    G.add('/free-course/', 'Free Online Tarot Course for Beginners | Namaste Tarot Center',
-          'Namaste Bookshop offers a free seven-lesson online tarot course with a workbook and final check. Here is what it covers and where to start.', fc,
-          crumbs=[('Home', '/'), ('Free course', '/free-course/')])
-    G.add('/about/', 'About Namaste Tarot Center', 'Who runs Namaste Tarot Center and how it relates to Namaste Bookshop in New York.',
-          f'<article class="lesson"><h1>About Namaste Tarot Center</h1><p>Namaste Tarot Center is a free study site connected to Namaste Bookshop, a metaphysical bookshop at {G.ADDR}. '
-          f'Wealth Edge Ventures Inc., owner of the bookshop, publishes it.</p><p>The card notes, spreads and drills were written for this site. The deck suggestions come from the bookshop\'s beginner guide, '
-          f'and the "sit for a reading" page points to the readers who work at the shop. The site is a learning aid; it does not certify readers.</p>'
+    weeks = [('The skeleton', '/how-tarot-works/', 'Learn the 78-card structure: two arcana, four suits, numbers and courts. Sort a deck into its parts twice.'),
+             ('The first eleven majors', '/card-meanings/', 'The Fool through Wheel of Fortune. One card a day; write its picture in your own words before reading the notes.'),
+             ('The last eleven majors', '/card-meanings/', 'Justice through The World. End the week by laying all 22 in order and telling the story aloud.'),
+             ('Wands and Cups', '/card-meanings/suit-of-wands/', 'Learn the suit as a sequence, Ace to Ten, then add the four courts.'),
+             ('Swords and Pentacles', '/card-meanings/suit-of-swords/', 'Same method. Compare each number across all four suits.'),
+             ('Spreads', '/spreads/', 'Draw a morning card daily and try the three-card layout twice.'),
+             ('A full reading', '/watch-a-reading/', 'Sit for a reading and take notes afterward, then give a three-card reading for a friend in your own words.')]
+    fc = ('<article class="lesson"><h1>A free seven-week study plan</h1><p class="lede">One focus a week, about twenty minutes a day, using the notes on this site. No sign-up.</p><ol class="plan">'
+          + ''.join(f'<li><h2>Week {i}: <a href="{u}">{t}</a></h2><p>{d}</p></li>' for i, (t, u, d) in enumerate(weeks, 1))
+          + '</ol><h2>Is there an in-person class?</h2><p>We do not list in-person classes. For hands-on help, the closest thing is a reading with one of <a href="/readers/">our readers</a>, '
+          f'where you can say you are a student. Questions? Call {G.PHONE} or email {G.EMAIL}.</p></article>')
+    G.add('/free-course/', 'Free 7-Week Tarot Study Plan for Beginners | Namaste Tarot Center',
+          'A free seven-week tarot study plan from Namaste Tarot Center: one focus per week, from the deck\'s structure to your first full three-card reading.', fc,
+          crumbs=[('Home', '/'), ('Study plan', '/free-course/')])
+    STUD = [('casey-deamoira', 'For Thoth students: watch how she ties cards to astrology.'), ('anthony-fusco', 'For Voyager deck study and questions about timing.'),
+            ('mallika', 'For seeing Lenormand and tarot side by side.'), ('damon-stang', 'For traditional tarot alongside folk magic.'),
+            ('mychal-a-bryan', 'For Qabalistic tarot in a full hour; remote.'), ('tyler-t-mann-tarot', 'For practical, plain-spoken card language.'),
+            ('andrea-dopewitchkira', 'For a reader happy to keep talking afterward.'), ('rebecca-martinez', 'For readings in English or Spanish.')]
+    for k, why_ in STUD:
+        r = R[k]; first = r['name'].split()[0]
+        sess = '<ul class="sess">' + ''.join(f'<li><span>{E(a) or "Session"}</span><b>{E(b)}</b></li>' for a, b in r.get('services', [])) + '</ul>'
+        body = (f'<article class="lesson"><p class="kicker">Reader profile</p><div class="rh"><img src="{E(G.img(r["img"], 300))}" alt="{E(r["name"])}" width="110" height="110"><h1>{E(r["name"])}</h1></div>'
+                f'<p class="lede"><b>Good for students:</b> {why_}</p><h2>Sessions</h2>{sess}'
+                f'<p><a class="btn" href="{E(r["book"])}" rel="nofollow noopener">Book {E(first)}</a></p>'
+                f'<p class="tiny">Opens {E(first)}\'s Square booking page with live times; pay there to confirm. Tell {E(first)} at the start that you are learning.</p><p><a href="/readers/">All readers</a> &middot; <a href="/watch-a-reading/">How to watch a reading</a></p></article>')
+        G.add(f'/readers/{k}/', f'{r["name"]}: Tarot Reading for Students | Namaste Tarot Center', f'Sit for a tarot reading with {r["name"]} as a student. {why_} From ${r["from"]}.', body,
+              ld=[G.person_ld(k, f'/readers/{k}/')], crumbs=[('Home', '/'), ('Readers', '/readers/'), (r['name'], f'/readers/{k}/')])
+    G.add('/readers/', 'Tarot Readers for Students | Namaste Tarot Center', 'Eight Namaste Tarot Center readers matched to what a tarot student wants to watch: Thoth, Voyager, Lenormand, Qabalah and more.',
+          '<article class="lesson"><h1>Readers who suit students</h1><p class="lede">Pick by what you want to learn from watching.</p><ul class="rl">'
+          + ''.join(f'<li><a href="/readers/{k}/"><b>{E(R[k]["name"])}</b> {w} <i>from ${R[k]["from"]}</i></a></li>' for k, w in STUD) + '</ul></article>',
+          crumbs=[('Home', '/'), ('Readers', '/readers/')])
+    G.product_pages(decks, 'study-decks', 'Study decks', '/study-decks/', [('Home', '/')])
+    G.add('/cart/', 'Your Cart | Namaste Tarot Center', 'Your Namaste Tarot Center cart.', '<article class="lesson"><h1>Your cart</h1><p class="cmsg" role="status" aria-live="polite"></p><div data-cart-page><div class="cbody" data-cart-body><p>Loading your cart&hellip;</p></div></div><noscript><p>The cart needs JavaScript. Call <a href="tel:+12126450141">212-645-0141</a> to order by phone.</p></noscript><p><a href="/study-decks/">Back to study decks</a></p></article>', robots='noindex', sitemap=False)
+    G.add('/about/', 'About Namaste Tarot Center', 'Who runs Namaste Tarot Center, a tarot learning site in New York.',
+          f'<article class="lesson"><h1>About Namaste Tarot Center</h1><p>Namaste Tarot Center is a tarot learning site operated by Wealth Edge Ventures Inc. Its readers work inside Namaste Bookshop, {G.ADDR}, which the same company owns and which fills deck orders.</p>'
+          f'<p>The card notes, spreads, drills and study plan were written for this site, '
+          f'and the reader profiles introduce the readers who see students. The site is a learning aid; it does not certify readers.</p>'
           f'<p><a href="tel:{G.TEL}">{G.PHONE}</a> &middot; <a href="mailto:{G.EMAIL}">{G.EMAIL}</a></p></article>', crumbs=[('Home', '/'), ('About', '/about/')])
     G.add('/privacy/', 'Privacy | Namaste Tarot Center', 'How namastetarotcenter.com uses analytics and where bookings and orders are handled.',
           '<article class="lesson">' + G.privacy('namastetarotcenter.com is a reading and study site. You can use all of it without an account.', products=True) + '</article>',
@@ -147,7 +187,11 @@ def pages():
 NOTFOUND_DESC = 'Page not found on namastetarotcenter.com.'
 NOTFOUND = '<article class="lesson"><h1>Lesson not found</h1><p>This page does not exist. Head back to the <a href="/card-meanings/">card index</a> or the <a href="/">study map</a>.</p></article>'
 
-CSS = """:root{--teal:#0f4c48;--coral:#e0704a;--bg:#f4f1ea;--ink:#1d2725}
+CSS = """:root{--teal:#0f4c48;--coral:#e0704a;--bg:#f4f1ea;--ink:#1d2725;--accent:#0f4c48;--onaccent:#fff;--onink:#fff;--paper:#fff;--soft:#f4f1ea;--body:Inter,system-ui,sans-serif;--display:Fraunces,Georgia,serif;--btnr:6px;--r:8px;--line:#d9d3c7;--muted:#5b6563;--focus:#e0704a}
+.top{position:relative}.cartbtn{position:absolute;right:62px;top:50%;transform:translateY(-50%);color:var(--teal);width:30px;height:30px}.cartbtn svg{width:28px;height:28px}.cartn{position:absolute;top:-6px;right:-8px;background:var(--coral);color:#fff;border-radius:99px;font:700 .7rem sans-serif;padding:2px 6px}@media(min-width:900px){.cartbtn{right:16px}}
+button.btn{border:0;cursor:pointer;font:inherit;font-weight:600}.rh{display:flex;gap:14px;align-items:center}.rh img{width:110px;height:110px;border-radius:8px;object-fit:cover}.rh h1{margin:0}
+.sess{list-style:none;padding:0}.sess li{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:6px 0}.rl{list-style:none;padding:0}.rl li{margin:8px 0}.rl a{display:block;background:#fff;padding:10px 12px;border-left:4px solid var(--coral);text-decoration:none;color:var(--ink)}.rl i{color:var(--teal);font-style:normal;font-weight:600}
+.pd{display:grid;gap:18px}@media(min-width:760px){.pd{grid-template-columns:320px 1fr}}.pd img{width:100%;height:auto;background:#fff;object-fit:contain}.plan h2{font-size:1.15rem}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.7 Inter,system-ui,sans-serif}a{color:#0d6b63}
 h1,h2{font-family:Fraunces,Georgia,serif;line-height:1.15;color:var(--teal)}h1{font-size:clamp(1.9rem,6vw,2.7rem);font-weight:800;margin:.2em 0 .4em}
 .skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:#fff;padding:6px}
