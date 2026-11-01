@@ -1,7 +1,9 @@
-name: Deploy namastetarotcenter.com to GitHub Pages
+name: Build and deploy namastetarotcenter.com to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "41 11 * * *"   # daily refresh of study-deck prices and stock
   workflow_dispatch:
 permissions:
   contents: read
@@ -15,6 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build namastetarotcenter.com
+        run: python3 scripts/build.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
