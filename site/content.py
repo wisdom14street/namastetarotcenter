@@ -5,6 +5,7 @@ import engine as G
 from cards import MAJORS, SUITS
 R = json.load(open(os.path.join(os.path.dirname(__file__), 'readers.json')))
 E = G.E
+NB_BOOK = G.BOOK + '?utm_source=' + G.DOMAIN + '&utm_medium=referral&utm_campaign=sister_site'  # Namaste Bookshop booking page, tagged per sister site
 BUSINESS_TYPE = 'LocalBusiness'
 THEME_COLOR = '#0f4c48'
 FONTS = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;600&display=swap'
@@ -19,7 +20,7 @@ ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI',
 
 def shell(pg):
     nav = ''.join(f'<li><a href="{h}"' + (' aria-current="page"' if pg['path'].startswith(h) else '') + f'>{t}</a></li>' for h, t in NAV)
-    return (f'<body><a class="skip" href="#main">Skip to content</a><div class="top"><a class="mark" href="/"><span class="dot">NT</span><span>Namaste <b>Tarot Center</b><i>learn to read tarot</i></span></a>{G.cart_button()}'
+    return (f'<body><a class="skip" href="#main">Skip to content</a><p class="bookbar"><a href="{E(NB_BOOK)}">Ready to sit for a real reading? <b>Book a reading</b> &rarr;</a></p><div class="top"><a class="mark" href="/"><span class="dot">NT</span><span>Namaste <b>Tarot Center</b><i>learn to read tarot</i></span></a>{G.cart_button()}'
             f'<details class="mnav"><summary>Study map</summary><ul>{nav}</ul></details></div>'
             f'<div class="wrap"><aside class="side"><p class="sl">Study map</p><ol>{nav}</ol><p class="sl">Practice in person</p><p class="tiny"><a href="/readers/">Readers who suit students</a><br>{G.ADDR}<br><a href="tel:{G.TEL}">{G.PHONE}</a></p></aside>'
             f'<main id="main">{pg["body"]}</main></div>'
@@ -109,7 +110,7 @@ def pages():
     items, decks, books = shop_pages()
     home = (f'<section class="intro"><p class="kicker">Free &middot; self-paced &middot; New York</p><h1>Learn tarot one layer at a time</h1>'
             f'<p class="lede">Namaste Tarot Center is a study site for people who want to read tarot themselves. Start with how the deck is built, work through card notes and practice spreads, '
-            f'then sit for a reading with one of our readers and watch how a working reader puts it all together.</p></section>'
+            f'then sit for a reading with one of our readers and watch how a working reader puts it all together.</p><p><a class="btn" href="{E(NB_BOOK)}">Book a reading</a> <a class="ghost" href="/how-tarot-works/">Start studying</a></p></section>'
             f'<ol class="path">'
             f'<li><span>1</span><div><h2><a href="/how-tarot-works/">Understand the deck</a></h2><p>78 cards, two arcana, four suits, sixteen court cards. Learn the skeleton first.</p></div></li>'
             f'<li><span>2</span><div><h2><a href="/card-meanings/">Study the cards</a></h2><p>Notes for all 22 Major Arcana and a table for each suit, each with something to practice.</p></div></li>'
@@ -159,12 +160,12 @@ def pages():
     faq = [('Can I tell the reader I am learning?', 'Yes. Saying so at the start lets the reader explain a little more about why a card means what it does, if they are comfortable doing that.'),
            ('Which reader is best for a student?', 'Choose a style you want to learn. For Thoth study, sit with Casey Deamoira; for Lenormand next to tarot, Mallika; for the Voyager deck, Anthony Fusco.'),
            ('How long should I book?', 'Thirty minutes gives enough time for a full spread plus a couple of follow-up questions. Fifteen minutes is fine for watching one short spread.')]
-    watch = (f'<article class="lesson"><h1>Sit for a reading as a student</h1><p class="lede">One of the fastest ways to learn is to watch someone experienced read for you. Our readers on 14th Street work most days of the week.</p>'
+    watch = (f'<article class="lesson"><h1>Sit for a reading as a student</h1><p class="lede">One of the fastest ways to learn is to watch someone experienced read for you. Our readers on 14th Street work most days of the week.</p><p><a class="btn" href="{E(NB_BOOK)}">Book a reading</a></p>'
              f'<h2>What usually happens</h2><ol><li>The reader asks what you would like to look at, or invites you to keep it to yourself.</li><li>You or the reader shuffle, and cards are laid in a spread.</li>'
              f'<li>The reader talks through the cards, connects them and leaves room for your questions.</li></ol>'
              f'<h2>What to notice from your chair</h2><ul><li>Which card the reader looks at first.</li><li>How they link neighboring cards into one sentence.</li><li>When they use the picture versus a traditional meaning.</li><li>How they word hard cards kindly.</li></ul>'
              f'<p>Write your notes after the session rather than during it, so you stay present.</p><h2>Questions from students</h2><dl class="faq">' + ''.join(f'<dt>{q}</dt><dd>{a}</dd>' for q, a in faq) + '</dl>'
-             f'<p><a class="btn" href="/readers/">Choose a reader</a></p><p class="tiny">Readings take place inside Namaste Bookshop, {G.ADDR}, or upstairs at {G.HC_STREET}. Sessions run 15 to 60 minutes; prices are on each profile.</p></article>')
+             f'<p><a class="btn" href="{E(NB_BOOK)}">Book a reading</a> <a class="ghost" href="/readers/">Choose a reader</a></p><p class="tiny">Readings take place inside Namaste Bookshop, {G.ADDR}, or upstairs at {G.HC_STREET}. Sessions run 15 to 60 minutes; prices are on each profile.</p></article>')
     G.add('/watch-a-reading/', 'Learn Tarot by Sitting for a Reading | Namaste Tarot Center',
           'How a professional tarot reading runs, what a student can learn from watching one, and how to book a session with Namaste Tarot Center readers in Manhattan.', watch,
           ld=[G.faq_ld(faq)], crumbs=[('Home', '/'), ('Sit for a reading', '/watch-a-reading/')])
@@ -253,6 +254,7 @@ main{padding:20px 0 40px;min-width:0}.kicker{color:#a8441f;font-weight:700;text-
 .tiles{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}@media(min-width:640px){.tiles{grid-template-columns:repeat(4,1fr)}}
 .tiles a{display:flex;flex-direction:column;background:#fff;border:1px solid #e2ddd2;border-radius:10px;padding:10px;text-decoration:none;color:var(--ink);height:100%}.tiles b{color:var(--coral);font-family:Fraunces,serif}.tiles small{color:#68736f}
 .spread{background:#fff;border-radius:12px;padding:6px 16px 12px;margin:14px 0;border-top:4px solid var(--teal)}.spread small{font:600 .8rem Inter,sans-serif;color:var(--coral)}
+.bookbar{margin:0;background:var(--teal);text-align:center;padding:7px 12px;font-size:.92rem}.bookbar a{color:#fff;text-decoration:none}.bookbar b{text-decoration:underline}
 .btn{display:inline-block;background:var(--coral);color:#fff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px}.ghost{display:inline-block;padding:10px;font-weight:600}
 .dk{list-style:none;padding:0}.dk li{display:flex;gap:14px;background:#fff;padding:12px;border-radius:12px;margin:10px 0}.dk img{object-fit:contain;flex:none}.dk h2{font:600 1rem Inter,sans-serif;color:var(--ink);margin:0}.pr{font-weight:700;margin:.3em 0}
 .faq dt{font-weight:700;margin-top:.8em}.faq dd{margin:.2em 0 0}
