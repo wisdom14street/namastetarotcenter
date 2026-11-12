@@ -6,6 +6,9 @@ from cards import MAJORS, SUITS
 R = json.load(open(os.path.join(os.path.dirname(__file__), 'readers.json')))
 E = G.E
 NB_BOOK = G.BOOK + '?utm_source=' + G.DOMAIN + '&utm_medium=referral&utm_campaign=sister_site'  # Namaste Bookshop booking page, tagged per sister site
+
+def NB(path):  # Namaste Bookshop guide page, tagged per sister site
+    return 'https://namastebookshop.com/pages/' + path + '?utm_source=' + G.DOMAIN + '&utm_medium=referral&utm_campaign=sister_site'
 BUSINESS_TYPE = 'LocalBusiness'
 THEME_COLOR = '#0f4c48'
 FONTS = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;600&display=swap'
@@ -165,7 +168,7 @@ def pages():
              f'<li>The reader talks through the cards, connects them and leaves room for your questions.</li></ol>'
              f'<h2>What to notice from your chair</h2><ul><li>Which card the reader looks at first.</li><li>How they link neighboring cards into one sentence.</li><li>When they use the picture versus a traditional meaning.</li><li>How they word hard cards kindly.</li></ul>'
              f'<p>Write your notes after the session rather than during it, so you stay present.</p><h2>Questions from students</h2><dl class="faq">' + ''.join(f'<dt>{q}</dt><dd>{a}</dd>' for q, a in faq) + '</dl>'
-             f'<p><a class="btn" href="{E(NB_BOOK)}">Book a reading</a> <a class="ghost" href="/readers/">Choose a reader</a></p><p class="tiny">Readings take place inside Namaste Bookshop, {G.ADDR}, or upstairs at {G.HC_STREET}. Sessions run 15 to 60 minutes; prices are on each profile.</p></article>')
+             f'<p><a class="btn" href="{E(NB_BOOK)}">Book a reading</a> <a class="ghost" href="/readers/">Choose a reader</a></p><p>Never sat for one before? Read the bookshop’s <a href="{E(NB("first-tarot-reading-what-to-expect"))}">what to expect at your first tarot reading</a>.</p><p class="tiny">Readings take place inside Namaste Bookshop, {G.ADDR}, or upstairs at {G.HC_STREET}. Sessions run 15 to 60 minutes; prices are on each profile.</p></article>')
     G.add('/watch-a-reading/', 'Learn Tarot by Sitting for a Reading | Namaste Tarot Center',
           'How a professional tarot reading runs, what a student can learn from watching one, and how to book a session with Namaste Tarot Center readers in Manhattan.', watch,
           ld=[G.faq_ld(faq)], crumbs=[('Home', '/'), ('Sit for a reading', '/watch-a-reading/')])
